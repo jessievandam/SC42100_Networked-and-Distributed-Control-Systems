@@ -37,13 +37,35 @@ pii = V(:,1);                 % eigenvector pi corresponding to an eigenvalue of
 cen_bonacich = pii/sum(pii);  % normalizing pi to get Bonacich centrality
 
 %% 1B - Closeness centrality
-cen_closeness = zeros(n,1);
+cen_closeness = zeros(n,1); % initialize vector
+
 for i = 1:n 
     cen_closeness(i,1) = n/sum(d(i,:)); % divide number of nodes with sum of distances of row i
 end
 
 %% 1C - Decay centrality
+pi_d1 = zeros(n,1); % initialize vector
+pi_d2 = zeros(n,1); % initialize vector
+pi_d3 = zeros(n,1); % initialize vector
+
+for i = 1:n
+    for j = 1:n
+        if i == j
+        else
+            % delta = 0.25
+            pi_d1(i) = pi_d1(i) + 0.25^dist(i,j);
+            
+            % delta = 0.5
+            pi_d2(i) = pi_d2(i) + 0.5^dist(i,j);
+            
+            % delta = 0.75
+            pi_d3(i) = pi_d3(i) + 0.75^dist(i,j);
+        end
+    end
+end
+
+cen_decay = [pi_d1 pi_d2 pi_d3];
 
 %% 1D - Betweenness centrality
-
-
+gij = centrality(G,'betweenness'); % number of shortest paths between other nodes that pass through node i
+cen_betweenness = gij/(n^2);       % normalize the betweenness

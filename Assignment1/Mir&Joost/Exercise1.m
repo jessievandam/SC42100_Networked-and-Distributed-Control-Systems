@@ -78,7 +78,7 @@ for i = 1:n
 end
 
 betweennessvalues = centrality(G,'betweenness');
-betweennessvaluesnormalized = betweennessvalues/n^2;
+betweennessvaluesnormalized = betweennessvalues/(n^2);
 
 %% Calculating all possible paths between all nodes
 for i = 1:n
@@ -100,7 +100,7 @@ for i = 1:n
     for j = 1:n
         for k = 1:length(allpaths{i,j})
             lengthshortest = allpaths{i,j}
-            shortestpaths{i,j} = ;
+%             shortestpaths{i,j} = ;
         end
     end
 end
