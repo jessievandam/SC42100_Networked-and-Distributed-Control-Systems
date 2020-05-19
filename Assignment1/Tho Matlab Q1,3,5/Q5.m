@@ -4,10 +4,10 @@ load -ascii traffic.mat
 load -ascii capacities.mat
 load -ascii traveltime.mat
 load -ascii flow.mat
-W = zeros(17,17);
+W = zeros(13,1);
 s = [];
 t = [];
- for i = 1:17
+ for i = 1:13
     for j = 1:28
        if traffic(i,j) == 1
            s(1,length(s)+1) = i;

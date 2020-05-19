@@ -31,12 +31,20 @@ end
 G = sparse(s, t, traveltime);
 G = [G; zeros(1, size(G,2))]; %make G square
 
+% OUR METHOD
+G2 = digraph(s,t);  % defining directed graph G without weights
+W2 = adjacency(G2,traveltime);
+
 % show the graph
 SP = view(biograph(G,[],'ShowWeights','on'));
 
 % calculate shortest path from 1 to 17
-[dist,path,pred]  = graphshortestpath(G,1,17);
+[dist,path,pred]  = graphshortestpath(G,1,13);
 
+% OUR METHOD
+[dist2,path2,pred2]  = graphshortestpath(W2,1,13);
+
+%%
 % show shortest path by making the nodes and edges red
 set(SP.Nodes(path),'Color',[1 0.4 0.4])
 edges = getedgesbynodeid(SP,get(SP.Nodes(path),'ID'));
