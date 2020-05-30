@@ -67,5 +67,216 @@ end
 cen_decay = [pi_d1 pi_d2 pi_d3];
 
 %% 1D - Betweenness centrality
-gij = centrality(G,'betweenness'); % number of shortest paths between other nodes that pass through node i
-cen_betweenness = gij/(n^2);       % normalize the betweenness
+gij2 = centrality(G,'betweenness'); % number of shortest paths between other nodes that pass through node i
+cen_betweenness2 = gij2/(n^2);      % normalize the betweenness
+
+
+%% 1D - Betweenness centrality
+% Compute all posible paths using function found on Github
+% for i = 1:n
+%     for j = 1:n
+%         if i ~= j
+%             allpaths{i,j} = pathbetweennodes(W,i,j);
+%         end
+%     end
+% end
+
+% Compute distance of shortest path between two nodes
+[short_dist] = graphallshortestpaths(sparse(W));
+
+% Compute gij: the fraction of all minimum-distance paths from i to j 
+gij = zeros(n,n); % initialization gij
+for i = 1:n
+    for j = 1:n
+        path_ind{i,j} = 0; % initialization path indices per node combination i j
+        count = 0;         % initialization counter 1
+        countAm = 0;      % initialization counter Amsterdam
+        countSch = 0;     % initialization counter Schiphol
+        countRot = 0;     % initialization counter Rotterdam
+        countUt = 0;      % initialization counter Utrecht
+        
+        for k = 1:length(allpaths{i,j})
+            
+            % Compute all path lengths from node i to j
+            path_length(k) = length(allpaths{i,j}{k});
+            
+            % Find the indices of all shortest paths from node i to j
+            if (path_length(k)-1)==short_dist(i,j)
+                path_ind{i,j} = [path_ind{i,j}; k];
+            end
+            
+            % Check amount of shortest paths from node i to j
+            for h = 1:length(path_ind{i,j})
+                if (path_ind{i,j}(h,1)>0)
+                    count = count+1;  % count 1 if an index is found and there is thus a shortest path
+                end
+            end
+            
+            % Check amount of shortest paths that go through a certain node, but not start or end there
+            C = cell2mat(allpaths{i,j}(k));
+            for h = 1:length(path_ind{i,j})
+                
+                % Node 4 (Amsterdam)
+                if (path_ind{i,j}(h,1)>0) & (ismember(4,C)) & (C(1)~=4) & (C(end)~=4)
+                    countAm = countAm+1;
+                end
+                
+                % Node 12 (Schiphol)
+                if (path_ind{i,j}(h,1)>0) & (ismember(12,C)) & (C(1)~=12) & (C(end)~=12)
+                    countSch = countSch+1;
+                end
+                
+                % Node 11 (Rotterdam)
+                if (path_ind{i,j}(h,1)>0) & (ismember(11,C)) & (C(1)~=11) & (C(end)~=11)
+                    countRot = countRot+1;
+                end
+                
+                % Node 13 (Utrecht)
+                if (path_ind{i,j}(h,1)>0) & (ismember(13,C)) & (C(1)~=13) & (C(end)~=13)
+                    countUt = countUt+1;
+                end
+            end            
+        end
+        
+        GijAm(i,j) = countAm/count;
+        GijSch(i,j) = countSch/count;
+        GijRot(i,j) = countRot/count;
+        GijUt(i,j) = countUt/count;
+        
+        clear path_length
+        clear count
+        clear countAm
+        clear countSch
+        clear countRot
+        clear countUt
+    end
+end
+
+% Summation over all gij's per city
+SumGijAm = 0;
+SumGijSch = 0;
+SumGijRot = 0;
+SumGijUt = 0;
+for i = 1:n
+    for j = 1:n
+        if i~=j
+            SumGijAm = SumGijAm + GijAm(i,j);
+            SumGijSch = SumGijSch + GijSch(i,j);
+            SumGijRot = SumGijRot + GijRot(i,j);
+            SumGijUt = SumGijUt + GijUt(i,j);
+        end
+    end
+end
+
+% Compute betweenness centrality
+betweenAm = SumGijAm*(1/(n^2));
+betweenSch = SumGijSch*(1/(n^2));
+betweenRot = SumGijRot*(1/(n^2));
+betweenUt = SumGijUt*(1/(n^2));
+
+cen_betweenness = [betweenAm; betweenRot; betweenSch; betweenUt];
+
+%% 1D - Function for finding all paths
+
+function pth = pathbetweennodes(adj, src, snk, verbose)
+    %PATHBETWEENNODES Return all paths between two nodes of a graph
+    %
+    % pth = pathbetweennodes(adj, src, snk)
+    % pth = pathbetweennodes(adj, src, snk, vflag)
+    %
+    %
+    % This function returns all simple paths (i.e. no cycles) between two nodes
+    % in a graph.  Not sure this is the most efficient algorithm, but it seems
+    % to work quickly for small graphs, and isn't too terrible for graphs with
+    % ~50 nodes.
+    %
+    % Input variables:
+    %
+    %   adj:    adjacency matrix
+    %
+    %   src:    index of starting node
+    %
+    %   snk:    index of target node
+    %
+    %   vflag:  logical scalar for verbose mode.  If true, prints paths to
+    %           screen as it traverses them (can be useful for larger,
+    %           time-consuming graphs). [false]
+    %
+    % Output variables:
+    %
+    %   pth:    cell array, with each cell holding the indices of a unique path
+    %           of nodes from src to snk.
+
+    % Copyright 2014 Kelly Kearney
+
+    if nargin < 4
+        verbose = false;
+    end
+
+    n = size(adj,1);
+
+    stack = src;
+
+    stop = false;
+
+    pth = cell(0);
+    cycles = cell(0);
+
+    next = cell(n,1);
+    for in = 1:n
+        next{in} = find(adj(in,:));
+    end
+
+    visited = cell(0);
+
+    pred = src;
+    while 1
+
+        visited = [visited; sprintf('%d,', stack)];
+
+        [stack, pred] = addnode(stack, next, visited, pred);
+        if verbose
+            fprintf('%2d ', stack);
+            fprintf('\n');
+        end
+
+        if isempty(stack)
+            break;
+        end
+
+        if stack(end) == snk
+            pth = [pth; {stack}];
+            visited = [visited; sprintf('%d,', stack)];
+            stack = popnode(stack);
+        elseif length(unique(stack)) < length(stack)
+            cycles = [cycles; {stack}];
+            visited = [visited; sprintf('%d,', stack)];
+            stack = popnode(stack);  
+        end
+    end
+        
+    function [stack, pred] = addnode(stack, next, visited, pred)
+        newnode = setdiff(next{stack(end)}, pred);
+        possible = arrayfun(@(x) sprintf('%d,', [stack x]), newnode, 'uni', 0);
+
+        isnew = ~ismember(possible, visited);
+
+        if any(isnew)
+            idx = find(isnew, 1);
+            stack = str2num(possible{idx});
+            pred = stack(end-1);
+        else
+            [stack, pred] = popnode(stack);
+        end
+    end
+
+    function [stack, pred] = popnode(stack)
+        stack = stack(1:end-1);
+        if length(stack) > 1
+            pred = stack(end-1);
+        else
+            pred = [];
+        end
+    end
+        
+ end

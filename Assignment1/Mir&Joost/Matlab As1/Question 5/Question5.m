@@ -31,18 +31,12 @@ end
 G = sparse(s, t, traveltime);
 G = [G; zeros(1, size(G,2))]; %make G square
 
-% OUR METHOD
-G2 = digraph(s,t);  % defining directed graph G without weights
-W2 = adjacency(G2,traveltime);
-
 % show the graph
 SP = view(biograph(G,[],'ShowWeights','on'));
 
 % calculate shortest path from 1 to 17
 [dist,path,pred]  = graphshortestpath(G,1,13);
 
-% OUR METHOD
-[dist2,path2,pred2]  = graphshortestpath(W2,1,13);
 
 %%
 % show shortest path by making the nodes and edges red
@@ -80,7 +74,7 @@ cvx_begin
     variable f(dim)
     minimize sum((l.*C).*inv_pos(ones(dim,1)-f./C)-l.*C)
     subject to
-            B*f == lambda - mu;
+            B*f == lambda - mu
             0 <= f <= C
 cvx_end
 
@@ -92,7 +86,7 @@ cvx_begin
     variable fw(dim)
     minimize sum(-l.*C.*log(C-fw))
     subject to
-            B*fw == lambda - mu;
+            B*fw == lambda - mu
             0 <= fw <= C
 cvx_end
 

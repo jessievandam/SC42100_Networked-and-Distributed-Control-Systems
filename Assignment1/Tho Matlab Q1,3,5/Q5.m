@@ -61,12 +61,22 @@ traveltime2 = rowswitch2*traveltime;
 G = digraph(s,t,capacities2);
 
 graphshortestpath(sparse(W),1,17,'Weights',traveltime2);
-graphmaxflow(sparse(W),1,17,'CAPACITY',capacities2);
+[MaxFlow, FlowMatrix, Cut] = graphmaxflow(sparse(W),1,17,'CAPACITY',capacities2);
 
 
 outflow = (traffic>0)*flow;
 inflow = (traffic<0)*flow;
 net_flow = inflow-outflow;
+
+%%
+% Adjacency matrix W with flow as weights
+W = sparse(s, t, flow);
+W2= sparse(s, t, capacities);
+W = [W; zeros(1, size(W,2))]; % making W square
+W2 = [W2; zeros(1, size(W2,2))];
+% Calculate maximum flow from node 1 to 13
+[MaxFlow1, FlowMatrix1, Cut1] = graphmaxflow(W, 1, 13);
+[MaxFlow2, FlowMatrix2, Cut2] = graphmaxflow(W2, 1, 13);
 
 
 %% 5.d
