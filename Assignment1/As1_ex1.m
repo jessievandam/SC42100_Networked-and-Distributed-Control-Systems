@@ -67,19 +67,14 @@ end
 cen_decay = [pi_d1 pi_d2 pi_d3];
 
 %% 1D - Betweenness centrality
-gij2 = centrality(G,'betweenness'); % number of shortest paths between other nodes that pass through node i
-cen_betweenness2 = gij2/(n^2);      % normalize the betweenness
-
-
-%% 1D - Betweenness centrality
 % Compute all posible paths using function found on Github
-% for i = 1:n
-%     for j = 1:n
-%         if i ~= j
-%             allpaths{i,j} = pathbetweennodes(W,i,j);
-%         end
-%     end
-% end
+for i = 1:n
+    for j = 1:n
+        if i ~= j
+            allpaths{i,j} = pathbetweennodes(W,i,j);
+        end
+    end
+end
 
 % Compute distance of shortest path between two nodes
 [short_dist] = graphallshortestpaths(sparse(W));
