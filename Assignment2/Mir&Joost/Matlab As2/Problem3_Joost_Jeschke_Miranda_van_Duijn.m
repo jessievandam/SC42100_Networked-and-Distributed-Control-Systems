@@ -114,3 +114,4 @@ subplot(2,2,1); legend('Plane 1', 'Plane 2', 'Plane 3', 'Plane 4'); title('x'); 
 subplot(2,2,2); legend('Plane 1', 'Plane 2', 'Plane 3', 'Plane 4'); title('y'); xlabel('Iterations'); ylabel('y');
 subplot(2,2,3); legend('Plane 1', 'Plane 2', 'Plane 3', 'Plane 4'); title('xdot'); xlabel('Iterations'); ylabel('dx');
 subplot(2,2,4); legend('Plane 1', 'Plane 2', 'Plane 3', 'Plane 4'); title('ydot'); xlabel('Iterations'); ylabel('dy');
+
